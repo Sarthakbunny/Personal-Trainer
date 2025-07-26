@@ -1,12 +1,13 @@
 package main
 
 import (
-    "fitai-backend/routes"
-    "github.com/gofiber/fiber/v2"
-    // _ "fitai-backend/docs"
-    // "github.com/gofiber/swagger"
-    "github.com/joho/godotenv"
-    "log"
+	"fitai-backend/routes"
+	"fitai-backend/services"
+	"github.com/gofiber/fiber/v2"
+	// _ "fitai-backend/docs"
+	// "github.com/gofiber/swagger"
+	"github.com/joho/godotenv"
+	"log"
 )
 
 // @title FitAI API
@@ -23,6 +24,8 @@ func main() {
 
 	//Register all routes
 	routes.RegisterRoutes(app)
+	// Initialize Firebase services
+	services.InitFirebase()
 
 	app.Listen(":8080")
 

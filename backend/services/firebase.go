@@ -1,10 +1,10 @@
 package services
 
 import (
+	"cloud.google.com/go/firestore"
 	"context"
 	"firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
-	"cloud.google.com/go/firestore"
 	"google.golang.org/api/option"
 	"log"
 )

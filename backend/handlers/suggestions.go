@@ -1,40 +1,58 @@
 package handlers
 
 import (
+	"context"
+	"fitai-backend/models"
 	"fitai-backend/services"
 	"github.com/gofiber/fiber/v2"
+	"time"
 )
 
-// GetSuggestion godoc
-// @Summary Generate personalized suggestion
-// @Description Get AI-generated plan based on goal, diet, and intensity
-// @Tags suggestions
-// @Accept json
-// @Produce json
-// @Param request body SuggestionRequest true "Suggestion Input"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} map[string]string
-// @Failure 500 {object} map[string]string
-// @Router /api/suggestions [post]
+func GetSuggestion(c *fiber.Ctx) error {
+	uid := c.Locals("uid").(string)
+	today := time.Now().Format("2006-01-02")
 
-type SuggestionRequest struct {
-	Goal      string `json:"goal"`
-	DietType  string `json:"diet_type"`
-	Intensity string `json:"intensity"`
+	doc, err := services.FirestoreClient.Collection("users").Doc(uid).Collection("suggestions").Doc(today).Get(context.Background())
+	if err == nil && doc.Exists() {
+		return c.JSON(doc.Data())
+	}
+
+	// If not exists, return a message
+	return c.Status(404).JSON(fiber.Map{"message": "No suggestion for today, use POST to generate one"})
 }
 
-func GetSuggestion(c *fiber.Ctx) error {
-	req := new(SuggestionRequest)
-	if err := c.BodyParser(req); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "invalid input"})
+func GenerateSuggestion(c *fiber.Ctx) error {
+	uid := c.Locals("uid").(string)
+	var req models.OnboardingData
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid input"})
 	}
 
-	prompt := "User wants to " + req.Goal + " and follows a " + req.DietType + " diet. Give a " + req.Intensity + " intensity workout and diet plan for today."
+	// Build Gemini prompt
+	prompt := "Create a diet and workout plan for someone with the following preferences:\n" +
+		"Goal: " + req.Goal + "\n" +
+		"Diet: " + req.Diet + "\n" +
+		"Level: " + req.Level + "\n" +
+		"Allergy: " + req.Allergy
 
-	response, err := services.GenerateSuggestions(prompt)
+	// Call Gemini API
+	result, err := services.GenerateSuggestions(prompt)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "AI error"})
+		return c.Status(500).JSON(fiber.Map{"error": "AI generation failed"})
 	}
 
-	return c.JSON(fiber.Map{"suggestion": response})
+	// Save to Firestore
+	today := time.Now().Format("2006-01-02")
+	_, err = services.FirestoreClient.Collection("users").Doc(uid).
+		Collection("suggestions").Doc(today).
+		Set(context.Background(), map[string]interface{}{
+			"date":       today,
+			"suggestion": result,
+		})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Firestore save failed"})
+	}
+
+	return c.JSON(fiber.Map{"suggestion": result})
 }

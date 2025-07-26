@@ -27,7 +27,7 @@ type GeminiResponse struct {
 func GenerateSuggestions(prompt string) (string, error) {
 	url := "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + GeminiAPIKey
 
-	requestBody :=  map[string]interface{}{
+	requestBody := map[string]interface{}{
 		"contents": []map[string]interface{}{
 			{
 				"role": "user",
