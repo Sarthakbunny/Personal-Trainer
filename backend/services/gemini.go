@@ -34,8 +34,8 @@ func GenerateSuggestions(prompt string) (string, error) {
 				"parts": []map[string]string{
 					{"text": prompt},
 				},
-			}
-		}
+			},
+		},
 	}
 
 	jsonBody, _ := json.Marshal(requestBody)
