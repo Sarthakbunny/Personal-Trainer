@@ -18,7 +18,7 @@ func GetSuggestion(c *fiber.Ctx) error {
 	}
 
 	// If not exists, return a message
-	return c.Status(404).JSON(fiber.Map{"message": "No suggestion for today, use POST to generate one"})
+	return c.Status(err.Status).JSON(fiber.Map{"message": "No suggestion for today, use POST to generate one " + err.Error()})
 }
 
 func GenerateSuggestion(c *fiber.Ctx) error {
@@ -39,7 +39,7 @@ func GenerateSuggestion(c *fiber.Ctx) error {
 	// Call Gemini API
 	result, err := services.GenerateSuggestions(prompt)
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "AI generation failed"})
+		return c.Status(err.Status).JSON(fiber.Map{"error": "AI generation failed " + err.Error()})
 	}
 
 	// Save to Firestore
@@ -51,7 +51,7 @@ func GenerateSuggestion(c *fiber.Ctx) error {
 			"suggestion": result,
 		})
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "Firestore save failed"})
+		return c.Status(err.Status).JSON(fiber.Map{"error": "Firestore save failed " + err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"suggestion": result})

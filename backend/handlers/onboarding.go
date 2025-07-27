@@ -20,7 +20,7 @@ func SaveOnboarding(c *fiber.Ctx) error {
 		"onboarding": data,
 	}, firestore.MergeAll) // Use MergeAll to update or create the document
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to save onboarding"})
+		return c.Status(err.Status).JSON(fiber.Map{"error": "Failed to save onboarding " + err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"message": "Onboarding saved"})

@@ -18,7 +18,7 @@ func MarkCheckIn(c *fiber.Ctx) error {
 			"timestamp": time.Now(),
 		})
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to mark check-in"})
+		return c.Status(err.Status).JSON(fiber.Map{"error": "Failed to record check-in: " + err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"message": "Check-in recorded"})

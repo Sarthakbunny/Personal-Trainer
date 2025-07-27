@@ -10,11 +10,11 @@ func RegisterRoutes(app *fiber.App) {
 	api := app.Group("/api")
 
 	// Protected routes with Firebase Auth
-	protected := api.Group("/", middleware.AuthMiddleware)
+	api.Use(middleware.AuthMiddleware)
 
-	protected.Post("/onboarding", handlers.SaveOnboarding)
-	protected.Get("/suggestions", handlers.GetSuggestion)
-	protected.Post("/suggestions", handlers.GenerateSuggestion)
-	protected.Post("/checkin", handlers.MarkCheckIn)
-	protected.Get("/streak", handlers.GetStreak)
+	api.Post("/onboarding", handlers.SaveOnboarding)
+	api.Post("/suggestions", handlers.GenerateSuggestion)
+	api.Get("/suggestions", handlers.GetSuggestions)
+	api.Post("/checkin", handlers.MarkCheckIn)
+	api.Get("/streak", handlers.GetStreak)
 }

@@ -9,7 +9,11 @@ import (
 
 func GetStreak(c *fiber.Ctx) error {
 	uid := c.Locals("uid").(string)
-	checkins := services.FirestoreClient.Collection("users").Doc(uid).Collection("checkins")
+	checkins, err := services.FirestoreClient.Collection("users").Doc(uid).Collection("checkins")
+
+	if err != nil {
+		return c.Status(err.Status).JSON(fiber.Map{"error": "Failed to retrieve check-ins: " + err.Error()})
+	}
 
 	streak := 0
 	today := time.Now()
